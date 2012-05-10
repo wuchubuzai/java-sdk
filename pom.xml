@@ -1,0 +1,12 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.wuchubuzai</groupId>
+  <artifactId>java-sdk</artifactId>
+  <version>1.0.0</version>
+  <name>java-sdk</name>
+  <description>Wuchubuzai API java-sdk</description>
+  <organization>
+  	<name>Wuchubuzai</name>
+  	<url>http://www.wuchubuzai.com/</url>
+  </organization>
+</project>
