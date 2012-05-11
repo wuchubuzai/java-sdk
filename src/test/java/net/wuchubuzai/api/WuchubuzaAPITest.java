@@ -1,5 +1,7 @@
 package net.wuchubuzai.api;
 
+import java.util.HashMap;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,18 +13,25 @@ public class WuchubuzaAPITest {
 	private WuchubuzaiAPI api;
 	static final Logger log = LoggerFactory.getLogger(WuchubuzaAPITest.class);
 	
+	private String expectedNickname = "sampleNickname";
+	private String emailAddress = "sample@email.address";
+	private String password = "samplePassword";
+	private String restKey = "f339a0538297a1a91a93a4585a268ad4";
+	private String apiUrl = "dev.api.wuchubuzai.com";
+	
+	
 	@Before
 	public void setUp() throws Exception {
 		api = new WuchubuzaiAPI();
 	}
-
+	
 	@Test
 	public void testGetApiUrls() {
 		// production (default)
 		Assert.assertEquals("http://api.wuchubuzai.com", api.getApiUrl());
 		
 		// development
-		api.setApiUrl("dev.api.wuchubuzai.com");
+		api.setApiUrl(this.apiUrl);
 		Assert.assertEquals("http://dev.api.wuchubuzai.com", api.getApiUrl());
 		
 		// sandbox
@@ -30,7 +39,37 @@ public class WuchubuzaAPITest {
 		Assert.assertEquals("http://sbx.api.wuchubuzai.com", api.getApiUrl());
 	}
 
+	@Test
+	public void testGetUser() {
+		api.setApiUrl(this.apiUrl);
+		HashMap<String, Object> apiResults = api.get("user", "ed777d8b-010f-45b3-acb6-75213c1f16e8", null, null);
+		Assert.assertEquals(expectedNickname, apiResults.get("nickname").toString());
+	}
 	
+	@Test
+	public void testPostAuthentication() {
+		api.setApiUrl(this.apiUrl);
+		HashMap<String, String> attributes = new HashMap<String, String>();
+		attributes.put("email", this.emailAddress);
+		attributes.put("password", this.password);
+		
+		HashMap<String, Object> apiResults = api.post("accounts", attributes, null);
+		Assert.assertEquals("API_SUCCESS_000002", apiResults.get("success_code").toString());
+		this.restKey = apiResults.get("rest_key").toString();
+	}
+	
+	@Test
+	public void testSearch() { 
+		api.setApiUrl(this.apiUrl);
+		if (this.restKey != null) { 
+			HashMap<String, String> attributes = new HashMap<String, String>();
+			attributes.put("gender", "1");
+			attributes.put("seeking_gender", "2");
+			
+			HashMap<String, Object> apiResults = api.search("user", attributes, this.restKey);
+			this.restKey = apiResults.get("rest_key").toString();			
+		}
+	}
 	
 	
 }
