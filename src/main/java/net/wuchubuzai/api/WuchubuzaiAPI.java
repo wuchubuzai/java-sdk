@@ -1,16 +1,22 @@
 package net.wuchubuzai.api;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.representation.Form;
+import com.sun.jersey.api.uri.UriBuilderImpl;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 
 /**
  * 
@@ -25,64 +31,88 @@ public class WuchubuzaiAPI implements ApiInterface {
 	private String applicationId;
 	private String apiKey;
 	private String apiSecret;
-	private boolean debug = false;
 	
-	
+	private static ObjectMapper mapper = new ObjectMapper();
 
-	public HashMap<String, String> get(String objectType, String objectId,
-			HashMap<String, String> attributes, String restKey) {
-		// TODO Auto-generated method stub
-		// sendPackage(methodName, objectType, objectId, attributes, restKey, targetLanguage);
-		return null;
+	public HashMap<String, Object> get(String objectType, String objectId, HashMap<String, String> attributes, String restKey) {
+		if (log.isDebugEnabled()) log.debug("GET request for " + objectType);
+		return sendPackage("GET", objectType, objectId, attributes, restKey, null);
 	}
 
-	public HashMap<String, String> put(String objectType, String objectId,
-			HashMap<String, String> attributes, String restKey) {
-		// TODO Auto-generated method stub
-		// sendPackage(methodName, objectType, objectId, attributes, restKey, targetLanguage);
-		return null;
+	public HashMap<String, Object> put(String objectType, String objectId, HashMap<String, String> attributes, String restKey) {
+		return sendPackage("PUT", objectType, objectId, attributes, restKey, null);
 	}
 
-	public HashMap<String, String> post(String objectType,
-			HashMap<String, String> attributes, String restKey) {
-		// TODO Auto-generated method stub
-		// sendPackage(methodName, objectType, objectId, attributes, restKey, targetLanguage);		
-		return null;
+	public HashMap<String, Object> post(String objectType, HashMap<String, String> attributes, String restKey) {
+		return sendPackage("POST", objectType, null, attributes, restKey, null);		
 	}
 
-	public HashMap<String, String> search(String objectType,
-			HashMap<String, String> attributes, String restKey) {
-		// TODO Auto-generated method stub
-		// sendPackage(methodName, objectType, objectId, attributes, restKey, targetLanguage);		
-		return null;
+	public HashMap<String, Object> search(String objectType, HashMap<String, String> attributes, String restKey) {
+		return sendPackage("SEARCH", objectType, null, attributes, restKey, null);		
 	}
 
 	public HashMap<String, Object> sendPackage(String methodName, String objectType, String objectId, HashMap<String, String> attributes, String restKey, String targetLanguage) {
-		
-		Form f = new Form();
-		if (restKey != null) f.add("rest_key", restKey); // not a mandatory parameter
-		f.add("app_id", getApiKey());
-		f.add("id", objectId);
-				
-		Client c = Client.create();
-		c.setFollowRedirects(true); // just incase we 301/302 the api in the future
-		
+						
+//		DefaultClientConfig config = new DefaultClientConfig();
+//		config.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
+// 
+        DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
 
+		ApacheHttpClient4 c = ApacheHttpClient4.create(config); // Client.create(config);
+		c.setFollowRedirects(true);
+		// HttpClient c = apacheClient.getClientHandler().getHttpClient(); 
+		
 		if (methodName.toUpperCase().equals("GET")) { 
-			WebResource r = c.resource(getApiUrl() + "/" + objectType); // TODO encode the attributes into a query string at the end of the url
+			UriBuilderImpl builder = new UriBuilderImpl();
+			builder.queryParam("id", objectId);
+				
+			log.debug(getApiUrl() + "/" + objectType + "/" + builder.build().toString());
+			WebResource r = c.resource(getApiUrl() + "/" + objectType + "/" + builder.build().toString()); // TODO encode the attributes into a query string at the end of the url
 			String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").get(String.class);
 			if (log.isDebugEnabled()) log.debug(response);
+			
+			try {
+				HashMap<String, Object> apiResponse = mapper.readValue(response, HashMap.class);
+				return apiResponse;
+			} catch (JsonParseException e) {
+				log.error("JsonParseException:" + e.getMessage());
+			} catch (JsonMappingException e) {
+				e.printStackTrace();
+				log.error("JsonMappingException:" + e.getMessage());
+			} catch (IOException e) {
+				e.printStackTrace();
+				log.error("IOException:" + e.getMessage());
+			}
+				
 		} else {
+			Form f = new Form();
+			if (restKey != null) f.add("rest_key", restKey); // not a mandatory parameter
+			if (getApplicationId() != null) f.add("app_id", getApplicationId());
+			if (objectId != null) f.add("id", objectId);
+
 			WebResource r = c.resource(getApiUrl() + "/" + objectType);
 			if (attributes.size() > 0) { 
 				for (Map.Entry<String, String> attr : attributes.entrySet()) {
 					f.add(attr.getKey(), attr.getValue());
 				}
 			}
-			if (methodName.toUpperCase().equals("POST")) { 
-				String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
-				if (log.isDebugEnabled()) log.debug(methodName.toUpperCase() + ": " + response);				
-			}
+
+			log.debug(f.toString());
+			// TODO this is causing problems (returning HTTP/1.1 411 Length Required from nginx
+			String response = r.type(MediaType.TEXT_PLAIN).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
+			if (log.isDebugEnabled()) log.debug(methodName.toUpperCase() + ": " + response);		
+			try {
+				HashMap<String, Object> apiResponse = mapper.readValue(response, HashMap.class);				
+				return apiResponse;
+			} catch (JsonParseException e) {
+				log.error("JsonParseException:" + e.getMessage());
+			} catch (JsonMappingException e) {
+				e.printStackTrace();
+				log.error("JsonMappingException:" + e.getMessage());
+			} catch (IOException e) {
+				e.printStackTrace();
+				log.error("IOException:" + e.getMessage());
+			}			
 		}
 		return null;
 	}
@@ -121,14 +151,6 @@ public class WuchubuzaiAPI implements ApiInterface {
 
 	public void setApiSecret(String _apiSecret) {
 		this.apiSecret = _apiSecret;
-	}
-
-	public boolean isDebug() {
-		return this.debug;
-	}
-
-	public void setDebug(boolean _debug) {
-		this.debug = _debug;
 	}
 
 	public String getApplicationId() {
