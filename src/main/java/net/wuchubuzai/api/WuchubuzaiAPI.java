@@ -14,8 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.representation.Form;
 import com.sun.jersey.api.uri.UriBuilderImpl;
+import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 
 /**
  * 
@@ -52,8 +54,10 @@ public class WuchubuzaiAPI implements ApiInterface {
 
 	public HashMap<String, Object> sendPackage(String methodName, String objectType, String objectId, HashMap<String, String> attributes, String restKey, String targetLanguage) {
 		
-		Client c = Client.create();
-		c.setFollowRedirects(true);
+		DefaultClientConfig config = new DefaultClientConfig();
+		// as per http://java.net/jira/browse/JERSEY-639 to resolve issue with SEARCH 
+		config.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
+		Client c = Client.create(config);
 		
 		if (methodName.toUpperCase().equals("GET")) { 
 			UriBuilderImpl builder = new UriBuilderImpl();
