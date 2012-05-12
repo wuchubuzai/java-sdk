@@ -60,7 +60,7 @@ public class WuchubuzaiAPI implements ApiInterface {
 			builder.queryParam("id", objectId);
 				
 			log.debug(getApiUrl() + "/" + objectType + "/" + builder.build().toString());
-			WebResource r = c.resource(getApiUrl() + "/" + objectType + "/" + builder.build().toString()); // TODO encode the attributes into a query string at the end of the url
+			WebResource r = c.resource(getApiUrl() + "/" + objectType + "/" + builder.build().toString()); 
 			String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").get(String.class);
 			if (log.isDebugEnabled()) log.debug(response);
 			
@@ -91,11 +91,11 @@ public class WuchubuzaiAPI implements ApiInterface {
 			}
 
 			log.debug(f.toString());
-			// TODO this is causing problems (returning HTTP/1.1 411 Length Required from nginx
+			// TODO com.sun.jersey.api.client.ClientHandlerException: java.net.ProtocolException: Invalid HTTP method: SEARCH
 			String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
 			if (log.isDebugEnabled()) log.debug(methodName.toUpperCase() + ": " + response);		
 			try {
-				HashMap<String, Object> apiResponse = mapper.readValue(response, HashMap.class);				
+				HashMap<String, Object> apiResponse = mapper.readValue(response, HashMap.class);	
 				return apiResponse;
 			} catch (JsonParseException e) {
 				log.error("JsonParseException:" + e.getMessage());
