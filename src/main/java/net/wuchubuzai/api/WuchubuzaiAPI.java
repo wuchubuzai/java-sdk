@@ -12,11 +12,10 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.representation.Form;
 import com.sun.jersey.api.uri.UriBuilderImpl;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
-import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 
 /**
  * 
@@ -52,15 +51,9 @@ public class WuchubuzaiAPI implements ApiInterface {
 	}
 
 	public HashMap<String, Object> sendPackage(String methodName, String objectType, String objectId, HashMap<String, String> attributes, String restKey, String targetLanguage) {
-						
-//		DefaultClientConfig config = new DefaultClientConfig();
-//		config.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
-// 
-        DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
-
-		ApacheHttpClient4 c = ApacheHttpClient4.create(config); // Client.create(config);
+		
+		Client c = Client.create();
 		c.setFollowRedirects(true);
-		// HttpClient c = apacheClient.getClientHandler().getHttpClient(); 
 		
 		if (methodName.toUpperCase().equals("GET")) { 
 			UriBuilderImpl builder = new UriBuilderImpl();
@@ -86,11 +79,11 @@ public class WuchubuzaiAPI implements ApiInterface {
 				
 		} else {
 			Form f = new Form();
-			if (restKey != null) f.add("rest_key", restKey); // not a mandatory parameter
+			if (restKey != null) f.add("rest_key", restKey);
 			if (getApplicationId() != null) f.add("app_id", getApplicationId());
 			if (objectId != null) f.add("id", objectId);
 
-			WebResource r = c.resource(getApiUrl() + "/" + objectType);
+			WebResource r = c.resource(getApiUrl() + "/" + objectType + "/");
 			if (attributes.size() > 0) { 
 				for (Map.Entry<String, String> attr : attributes.entrySet()) {
 					f.add(attr.getKey(), attr.getValue());
@@ -99,7 +92,7 @@ public class WuchubuzaiAPI implements ApiInterface {
 
 			log.debug(f.toString());
 			// TODO this is causing problems (returning HTTP/1.1 411 Length Required from nginx
-			String response = r.type(MediaType.TEXT_PLAIN).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
+			String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
 			if (log.isDebugEnabled()) log.debug(methodName.toUpperCase() + ": " + response);		
 			try {
 				HashMap<String, Object> apiResponse = mapper.readValue(response, HashMap.class);				
