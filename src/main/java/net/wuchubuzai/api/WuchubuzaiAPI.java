@@ -17,7 +17,6 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.representation.Form;
 import com.sun.jersey.api.uri.UriBuilderImpl;
-import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 
 /**
  * 
@@ -55,8 +54,6 @@ public class WuchubuzaiAPI implements ApiInterface {
 	public HashMap<String, Object> sendPackage(String methodName, String objectType, String objectId, HashMap<String, String> attributes, String restKey, String targetLanguage) {
 		
 		DefaultClientConfig config = new DefaultClientConfig();
-		// as per http://java.net/jira/browse/JERSEY-639 to resolve issue with SEARCH 
-		config.getProperties().put(URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND, true);
 		Client c = Client.create(config);
 		
 		if (methodName.toUpperCase().equals("GET")) { 
@@ -96,6 +93,11 @@ public class WuchubuzaiAPI implements ApiInterface {
 
 			log.debug(f.toString());
 			// TODO com.sun.jersey.api.client.ClientHandlerException: java.net.ProtocolException: Invalid HTTP method: SEARCH
+			// http://stackoverflow.com/questions/10656812/jersey-http-client-custom-request-method
+			if (methodName.toUpperCase().equals("SEARCH")) { 
+				methodName = "POST";
+				f.add("method", "browse");
+			}
 			String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
 			if (log.isDebugEnabled()) log.debug(methodName.toUpperCase() + ": " + response);		
 			try {

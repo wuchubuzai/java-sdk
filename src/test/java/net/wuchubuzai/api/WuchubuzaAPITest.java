@@ -13,10 +13,11 @@ public class WuchubuzaAPITest {
 	private WuchubuzaiAPI api;
 	static final Logger log = LoggerFactory.getLogger(WuchubuzaAPITest.class);
 	
-	private String expectedNickname = "sampleNickname";
-	private String emailAddress = "sample@email.address";
-	private String password = "samplePassword";
-	private String restKey = "f339a0538297a1a91a93a4585a268ad4";
+	private String expectedNickname = "-----";
+	private String expectedUid = "-----";
+	private String emailAddress = "-----";
+	private String password = "-----";
+	private String restKey = "-----";
 	private String apiUrl = "dev.api.wuchubuzai.com";
 	
 	
@@ -42,7 +43,7 @@ public class WuchubuzaAPITest {
 	@Test
 	public void testGetUser() {
 		api.setApiUrl(this.apiUrl);
-		HashMap<String, Object> apiResults = api.get("user", "ed777d8b-010f-45b3-acb6-75213c1f16e8", null, null);
+		HashMap<String, Object> apiResults = api.get("user", expectedUid, null, null);
 		Assert.assertEquals(expectedNickname, apiResults.get("nickname").toString());
 	}
 	
@@ -65,9 +66,7 @@ public class WuchubuzaAPITest {
 			HashMap<String, String> attributes = new HashMap<String, String>();
 			attributes.put("gender", "1");
 			attributes.put("seeking_gender", "2");
-			
 			HashMap<String, Object> apiResults = api.search("user", attributes, this.restKey);
-			this.restKey = apiResults.get("rest_key").toString();			
 		}
 	}
 	
