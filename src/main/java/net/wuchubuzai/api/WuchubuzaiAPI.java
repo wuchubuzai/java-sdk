@@ -34,55 +34,65 @@ public class WuchubuzaiAPI implements ApiInterface {
 	
 	private static ObjectMapper mapper = new ObjectMapper();
 
-	public HashMap<String, Object> get(String objectType, String objectId, HashMap<String, String> attributes, String restKey) {
-		if (log.isDebugEnabled()) log.debug("GET request for " + objectType);
+	public HashMap<String, Object> get(String objectType, String objectId, Map<String, String> attributes, String restKey) {
+		if (log.isDebugEnabled()) { 
+			log.debug("GET request for " + objectType);
+		}
 		return sendPackage("GET", objectType, objectId, attributes, restKey, null);
 	}
 
-	public HashMap<String, Object> put(String objectType, String objectId, HashMap<String, String> attributes, String restKey) {
+	public HashMap<String, Object> put(String objectType, String objectId, Map<String, String> attributes, String restKey) {
 		return sendPackage("PUT", objectType, objectId, attributes, restKey, null);
 	}
 
-	public HashMap<String, Object> post(String objectType, HashMap<String, String> attributes, String restKey) {
+	public HashMap<String, Object> post(String objectType, Map<String, String> attributes, String restKey) {
 		return sendPackage("POST", objectType, null, attributes, restKey, null);		
 	}
 
-	public HashMap<String, Object> search(String objectType, HashMap<String, String> attributes, String restKey) {
+	public HashMap<String, Object> search(String objectType, Map<String, String> attributes, String restKey) {
 		return sendPackage("SEARCH", objectType, null, attributes, restKey, null);		
 	}
 
-	public HashMap<String, Object> sendPackage(String methodName, String objectType, String objectId, HashMap<String, String> attributes, String restKey, String targetLanguage) {
+	public HashMap<String, Object> sendPackage(String methodName, String objectType, String objectId, Map<String, String> attributes, String restKey, String targetLanguage) {
 		
 		DefaultClientConfig config = new DefaultClientConfig();
 		Client c = Client.create(config);
 		
-		if (methodName.toUpperCase().equals("GET")) { 
+		if (methodName.equalsIgnoreCase("GET")) { 
 			UriBuilderImpl builder = new UriBuilderImpl();
 			builder.queryParam("id", objectId);
 				
-			log.debug(getApiUrl() + "/" + objectType + "/" + builder.build().toString());
+			if (log.isDebugEnabled()) { 
+				log.debug(getApiUrl() + "/" + objectType + "/" + builder.build().toString());
+			}
 			WebResource r = c.resource(getApiUrl() + "/" + objectType + "/" + builder.build().toString()); 
 			String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").get(String.class);
-			if (log.isDebugEnabled()) log.debug(response);
+			if (log.isDebugEnabled()) {
+				log.debug(response);
+			}
 			
 			try {
-				HashMap<String, Object> apiResponse = mapper.readValue(response, HashMap.class);
-				return apiResponse;
+				return mapper.readValue(response, HashMap.class);
+				// return apiResponse;
 			} catch (JsonParseException e) {
 				log.error("JsonParseException:" + e.getMessage());
 			} catch (JsonMappingException e) {
-				e.printStackTrace();
 				log.error("JsonMappingException:" + e.getMessage());
 			} catch (IOException e) {
-				e.printStackTrace();
 				log.error("IOException:" + e.getMessage());
 			}
 				
 		} else {
 			Form f = new Form();
-			if (restKey != null) f.add("rest_key", restKey);
-			if (getApplicationId() != null) f.add("app_id", getApplicationId());
-			if (objectId != null) f.add("id", objectId);
+			if (restKey != null) {
+				f.add("rest_key", restKey);
+			}
+			if (getApplicationId() != null) {
+				f.add("app_id", getApplicationId());
+			}
+			if (objectId != null) {
+				f.add("id", objectId);
+			}
 
 			WebResource r = c.resource(getApiUrl() + "/" + objectType + "/");
 			if (attributes.size() > 0) { 
@@ -91,25 +101,28 @@ public class WuchubuzaiAPI implements ApiInterface {
 				}
 			}
 
-			log.debug(f.toString());
+			if (log.isDebugEnabled()) { 
+				log.debug(f.toString());
+			}
 			// TODO com.sun.jersey.api.client.ClientHandlerException: java.net.ProtocolException: Invalid HTTP method: SEARCH
 			// http://stackoverflow.com/questions/10656812/jersey-http-client-custom-request-method
-			if (methodName.toUpperCase().equals("SEARCH")) { 
-				methodName = "POST";
+			String response;
+			if (methodName.equalsIgnoreCase("SEARCH")) { 
+				response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method("POST", String.class, f);
 				f.add("method", "browse");
+			} else {  
+				response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
 			}
-			String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
-			if (log.isDebugEnabled()) log.debug(methodName.toUpperCase() + ": " + response);		
+			if (log.isDebugEnabled()) {
+				log.debug(methodName.toUpperCase() + ": " + response);		
+			}
 			try {
-				HashMap<String, Object> apiResponse = mapper.readValue(response, HashMap.class);	
-				return apiResponse;
+				return mapper.readValue(response, HashMap.class);	
 			} catch (JsonParseException e) {
 				log.error("JsonParseException:" + e.getMessage());
 			} catch (JsonMappingException e) {
-				e.printStackTrace();
 				log.error("JsonMappingException:" + e.getMessage());
 			} catch (IOException e) {
-				e.printStackTrace();
 				log.error("IOException:" + e.getMessage());
 			}			
 		}
@@ -124,39 +137,39 @@ public class WuchubuzaiAPI implements ApiInterface {
 		}
 	}
 
-	public void setApiUrl(String _apiUrl) {
-		this.apiUrl = _apiUrl;
+	public void setApiUrl(String apiUrl) {
+		this.apiUrl = apiUrl;
 	}
 
 	public boolean useHttps() {
 		return this.useHttps;
 	}
 
-	public void setUseHttps(boolean _useHttps) {
-		this.useHttps = _useHttps;
+	public void setUseHttps(boolean useHttps) {
+		this.useHttps = useHttps;
 	}
 
 	public String getApiKey() {
 		return this.apiKey;
 	}
 
-	public void setApiKey(String _apiKey) {
-		this.apiKey = _apiKey;
+	public void setApiKey(String apiKey) {
+		this.apiKey = apiKey;
 	}
 
 	public String getApiSecret() {
 		return this.apiSecret;
 	}
 
-	public void setApiSecret(String _apiSecret) {
-		this.apiSecret = _apiSecret;
+	public void setApiSecret(String apiSecret) {
+		this.apiSecret = apiSecret;
 	}
 
 	public String getApplicationId() {
 		return this.applicationId;
 	}
 
-	public void setApplicationId(String _applicationId) {
-		this.applicationId = _applicationId;
+	public void setApplicationId(String applicationId) {
+		this.applicationId = applicationId;
 	}
 }
