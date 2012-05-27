@@ -1,15 +1,14 @@
 package net.wuchubuzai.api;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public interface ApiInterface {
-	HashMap<String, Object> get(String objectType, String objectId, Map<String, String> attributes, String restKey) throws InterruptedException, ExecutionException;
-	HashMap<String, Object> put(String objectType, String objectId, Map<String, String> attributes, String restKey) throws InterruptedException, ExecutionException;
-	HashMap<String, Object> post(String objectType, Map<String, String> attributes, String restKey) throws InterruptedException, ExecutionException;
-	HashMap<String, Object> search(String objectType, Map<String, String> attributes, String restKey) throws InterruptedException, ExecutionException;
-	HashMap<String, Object> sendPackage(String methodName, String objectType, String objectId, Map<String, String> attributes, String restKey, String targetLanguage) throws InterruptedException, ExecutionException;
+	Map<String, Object> get(String objectType, String objectId, Map<String, String> attributes, String restKey) throws InterruptedException, ExecutionException;
+	Map<String, Object> put(String objectType, String objectId, Map<String, String> attributes, String restKey) throws InterruptedException, ExecutionException;
+	Map<String, Object> post(String objectType, Map<String, String> attributes, String restKey) throws InterruptedException, ExecutionException;
+	Map<String, Object> search(String objectType, Map<String, String> attributes, String restKey) throws InterruptedException, ExecutionException;
+	Map<String, Object> sendPackage(String methodName, String objectType, String objectId, Map<String, String> attributes, String restKey, String targetLanguage) throws InterruptedException, ExecutionException;
 	String getApiUrl();
 	void setApiUrl(String apiUrl);
 	boolean useHttps();

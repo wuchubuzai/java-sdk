@@ -25,7 +25,7 @@ import com.sun.jersey.api.uri.UriBuilderImpl;
  */
 public class WuchubuzaiAPI implements ApiInterface {
 
-	static final Logger log = LoggerFactory.getLogger(WuchubuzaiAPI.class);
+	static final Logger LOG = LoggerFactory.getLogger(WuchubuzaiAPI.class);
 	private String apiUrl = "api.wuchubuzai.com";
 	private boolean useHttps = false;
 	private String applicationId;
@@ -34,26 +34,26 @@ public class WuchubuzaiAPI implements ApiInterface {
 	
 	private static ObjectMapper mapper = new ObjectMapper();
 
-	public HashMap<String, Object> get(String objectType, String objectId, Map<String, String> attributes, String restKey) {
-		if (log.isDebugEnabled()) { 
-			log.debug("GET request for " + objectType);
+	public Map<String, Object> get(String objectType, String objectId, Map<String, String> attributes, String restKey) {
+		if (LOG.isDebugEnabled()) { 
+			LOG.debug("GET request for " + objectType);
 		}
 		return sendPackage("GET", objectType, objectId, attributes, restKey, null);
 	}
 
-	public HashMap<String, Object> put(String objectType, String objectId, Map<String, String> attributes, String restKey) {
+	public Map<String, Object> put(String objectType, String objectId, Map<String, String> attributes, String restKey) {
 		return sendPackage("PUT", objectType, objectId, attributes, restKey, null);
 	}
 
-	public HashMap<String, Object> post(String objectType, Map<String, String> attributes, String restKey) {
+	public Map<String, Object> post(String objectType, Map<String, String> attributes, String restKey) {
 		return sendPackage("POST", objectType, null, attributes, restKey, null);		
 	}
 
-	public HashMap<String, Object> search(String objectType, Map<String, String> attributes, String restKey) {
+	public Map<String, Object> search(String objectType, Map<String, String> attributes, String restKey) {
 		return sendPackage("SEARCH", objectType, null, attributes, restKey, null);		
 	}
 
-	public HashMap<String, Object> sendPackage(String methodName, String objectType, String objectId, Map<String, String> attributes, String restKey, String targetLanguage) {
+	public Map<String, Object> sendPackage(String methodName, String objectType, String objectId, Map<String, String> attributes, String restKey, String targetLanguage) {
 		
 		DefaultClientConfig config = new DefaultClientConfig();
 		Client c = Client.create(config);
@@ -62,24 +62,24 @@ public class WuchubuzaiAPI implements ApiInterface {
 			UriBuilderImpl builder = new UriBuilderImpl();
 			builder.queryParam("id", objectId);
 				
-			if (log.isDebugEnabled()) { 
-				log.debug(getApiUrl() + "/" + objectType + "/" + builder.build().toString());
+			if (LOG.isDebugEnabled()) { 
+				LOG.debug(getApiUrl() + "/" + objectType + "/" + builder.build().toString());
 			}
 			WebResource r = c.resource(getApiUrl() + "/" + objectType + "/" + builder.build().toString()); 
 			String response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").get(String.class);
-			if (log.isDebugEnabled()) {
-				log.debug(response);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(response);
 			}
 			
 			try {
 				return mapper.readValue(response, HashMap.class);
 				// return apiResponse;
 			} catch (JsonParseException e) {
-				log.error("JsonParseException:" + e.getMessage());
+				LOG.error("JsonParseException:" + e.getMessage());
 			} catch (JsonMappingException e) {
-				log.error("JsonMappingException:" + e.getMessage());
+				LOG.error("JsonMappingException:" + e.getMessage());
 			} catch (IOException e) {
-				log.error("IOException:" + e.getMessage());
+				LOG.error("IOException:" + e.getMessage());
 			}
 				
 		} else {
@@ -101,8 +101,8 @@ public class WuchubuzaiAPI implements ApiInterface {
 				}
 			}
 
-			if (log.isDebugEnabled()) { 
-				log.debug(f.toString());
+			if (LOG.isDebugEnabled()) { 
+				LOG.debug(f.toString());
 			}
 			// TODO com.sun.jersey.api.client.ClientHandlerException: java.net.ProtocolException: Invalid HTTP method: SEARCH
 			// http://stackoverflow.com/questions/10656812/jersey-http-client-custom-request-method
@@ -113,17 +113,17 @@ public class WuchubuzaiAPI implements ApiInterface {
 			} else {  
 				response = r.type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).header("USER-AGENT", "wuchubuzai java-sdk /1.1").method(methodName.toUpperCase(), String.class, f);
 			}
-			if (log.isDebugEnabled()) {
-				log.debug(methodName.toUpperCase() + ": " + response);		
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(methodName.toUpperCase() + ": " + response);		
 			}
 			try {
 				return mapper.readValue(response, HashMap.class);	
 			} catch (JsonParseException e) {
-				log.error("JsonParseException:" + e.getMessage());
+				LOG.error("JsonParseException:" + e.getMessage());
 			} catch (JsonMappingException e) {
-				log.error("JsonMappingException:" + e.getMessage());
+				LOG.error("JsonMappingException:" + e.getMessage());
 			} catch (IOException e) {
-				log.error("IOException:" + e.getMessage());
+				LOG.error("IOException:" + e.getMessage());
 			}			
 		}
 		return null;
