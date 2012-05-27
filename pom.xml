@@ -36,4 +36,12 @@
   		<version>1.13-b01</version>
   	</dependency>
   </dependencies>
+  <issueManagement>
+  	<system>Redmine</system>
+  	<url>https://project.wuchubuzai.com/</url>
+  </issueManagement>
+  <ciManagement>
+  	<system>Jenkins</system>
+  </ciManagement>
+  <url>https://github.com/wuchubuzai/java-sdk</url>
 </project>
