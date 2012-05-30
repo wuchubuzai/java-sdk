@@ -1,17 +1,15 @@
 package net.wuchubuzai.api;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class WuchubuzaAPITest {
 
 	private WuchubuzaiAPI api;
-	static final Logger log = LoggerFactory.getLogger(WuchubuzaAPITest.class);
 	
 	private String expectedNickname = "-----";
 	private String expectedUid = "-----";
@@ -43,7 +41,7 @@ public class WuchubuzaAPITest {
 	@Test
 	public void testGetUser() {
 		api.setApiUrl(this.apiUrl);
-		HashMap<String, Object> apiResults = api.get("user", expectedUid, null, null);
+		Map<String, Object> apiResults = api.get("user", expectedUid, null, null);
 		Assert.assertEquals(expectedNickname, apiResults.get("nickname").toString());
 	}
 	
@@ -54,7 +52,7 @@ public class WuchubuzaAPITest {
 		attributes.put("email", this.emailAddress);
 		attributes.put("password", this.password);
 		
-		HashMap<String, Object> apiResults = api.post("accounts", attributes, null);
+		Map<String, Object> apiResults = api.post("accounts", attributes, null);
 		Assert.assertEquals("API_SUCCESS_000002", apiResults.get("success_code").toString());
 		this.restKey = apiResults.get("rest_key").toString();
 	}
@@ -66,7 +64,7 @@ public class WuchubuzaAPITest {
 			HashMap<String, String> attributes = new HashMap<String, String>();
 			attributes.put("gender", "1");
 			attributes.put("seeking_gender", "2");
-			HashMap<String, Object> apiResults = api.search("user", attributes, this.restKey);
+			Map<String, Object> apiResults = api.search("user", attributes, this.restKey);
 		}
 	}
 	
