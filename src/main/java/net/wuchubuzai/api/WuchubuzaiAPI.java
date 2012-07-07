@@ -72,7 +72,7 @@ public class WuchubuzaiAPI implements ApiInterface {
 			}
 			
 			try {
-				return mapper.readValue(response, HashMap.class);
+				return mapper.readValue(response, Map.class);
 				// return apiResponse;
 			} catch (JsonParseException e) {
 				LOG.error("JsonParseException:" + e.getMessage());
@@ -117,7 +117,7 @@ public class WuchubuzaiAPI implements ApiInterface {
 				LOG.debug(methodName.toUpperCase() + ": " + response);		
 			}
 			try {
-				return mapper.readValue(response, HashMap.class);	
+				return mapper.readValue(response, Map.class);	
 			} catch (JsonParseException e) {
 				LOG.error("JsonParseException:" + e.getMessage());
 			} catch (JsonMappingException e) {
